@@ -4,48 +4,46 @@ function init() {
     sherlock = fs.readFileSync('./texts/sherlock.txt', 'utf-8');
     sherlock = sherlock.replace(/\[(.*?)\]/gm, "").replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ")
     sherlock = sherlock.split(((BY_WORD)?(" "):""));
+    sherlock=sherlock.filter((el)=>el!=="")
 
     pride_and_prejudice = fs.readFileSync('./texts/pride_and_prejudice.txt', 'utf-8');
     pride_and_prejudice = pride_and_prejudice.replace(/\[(.*?)\]/gm, "").replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ")
     pride_and_prejudice = pride_and_prejudice.split(((BY_WORD)?(" "):""));
+    pride_and_prejudice=pride_and_prejudice.filter((el)=>el!=="")
 
     moby_dick = fs.readFileSync('./texts/moby_dick.txt', 'utf-8');
     moby_dick = moby_dick.replace(/\[(.*?)\]/gm, "").replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ")
     moby_dick = moby_dick.split(((BY_WORD)?(" "):""));
+    moby_dick=moby_dick.filter((el)=>el!=="")
 
     war_and_peace = fs.readFileSync('./texts/war_and_peace.txt', 'utf-8');
     war_and_peace = war_and_peace.replace(/\[(.*?)\]/gm, "").replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ")
     war_and_peace = war_and_peace.split(((BY_WORD)?(" "):""));
+    war_and_peace=war_and_peace.filter((el)=>el!=="")
 }
 
 const stats = new Map()
 
 function learn(data,N) {
-    let previous_word=""
-    for(let i=0;i<N;i++){
-        previous_word+=data[i].toLowerCase()+((BY_WORD)?(" "):"")
-    }
-   
-    for (let i = N; i < data.length - N; i+=N) {
-        let current_word=""
+    for (let i = 0; i < data.length-N; i++) {
+        let sequence=""
+        const next_word=data[i+N].toLowerCase()
         for(let n=0;n<N;n++){
-            current_word+=data[i+n].toLowerCase()+((BY_WORD)?(" "):"")
+            sequence+=data[i+n].toLowerCase()+((BY_WORD)?(" "):"")
         }
         if(BY_WORD){
-           current_word=current_word.trim()
+            sequence=sequence.trim()
         }
-        
-        if (!stats.get(previous_word)) {
-            stats.set(previous_word, new Map())
+
+        if (!stats.get(sequence)) {
+            stats.set(sequence, new Map())
         }
-        const current_word_frequency = stats.get(previous_word).get(current_word)
+        const current_word_frequency = stats.get(sequence).get(next_word)
         if (current_word_frequency) {
-            stats.get(previous_word).set(current_word, current_word_frequency + 1)
+            stats.get(sequence).set(next_word, current_word_frequency + 1)
         } else {
-            stats.get(previous_word).set(current_word, 1)
+            stats.get(sequence).set(next_word, 1)
         }
-        previous_word=current_word
-        // console.log(stats)
     }
     console.log(`Sequences: ${stats.size}`)
 }
@@ -98,25 +96,27 @@ function generate(n) {
     const random_beginning=getRandomKey(stats)
     console.log(random_beginning)
     let sentence = random_beginning
-    let prev_word = random_beginning
-    console.log(stats.get(prev_word))
+    let n_gram = random_beginning.split(((BY_WORD)?(" "):""))
+    console.log(stats.get(random_beginning))
     for (let i = 0; i < n; i++) {
-        const prev_word_stats = stats.get(prev_word)
-        if (!prev_word_stats) {
+        const n_gram_stats = stats.get(n_gram.join(((BY_WORD)?(" "):"")))
+        if (!n_gram_stats) {
             break
         }
-        const dist = new WeightedRandom(prev_word_stats)
-        let new_word = dist.sample()
+        const dist = new WeightedRandom(n_gram_stats)
+        const new_word = dist.sample()
         sentence += (((BY_WORD)?(" "):"") + new_word)
-        prev_word = new_word
+        n_gram.shift()
+        n_gram.push(new_word)
     }
     console.log(sentence)
 }
 
-const BY_WORD=false;
+const BY_WORD=true;
 init()
-learn(sherlock,8)
-learn(pride_and_prejudice,8)
-learn(moby_dick,8)
-learn(war_and_peace,8)
-generate(20)
+learn(sherlock,3)
+learn(pride_and_prejudice,3)
+learn(moby_dick,3)
+learn(war_and_peace,3)
+
+generate(40)
