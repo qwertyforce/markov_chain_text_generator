@@ -25,12 +25,16 @@ function learn(data,N) {
     for(let i=0;i<N;i++){
         previous_word+=data[i].toLowerCase()+((BY_WORD)?(" "):"")
     }
+   
     for (let i = N; i < data.length - N; i+=N) {
         let current_word=""
         for(let n=0;n<N;n++){
             current_word+=data[i+n].toLowerCase()+((BY_WORD)?(" "):"")
         }
-        current_word=current_word.trim()
+        if(BY_WORD){
+           current_word=current_word.trim()
+        }
+        
         if (!stats.get(previous_word)) {
             stats.set(previous_word, new Map())
         }
@@ -68,7 +72,7 @@ class WeightedRandom {
         while (low <= high) {
             mid = Math.floor((low + high) / 2);
             if (arr[mid][0] === value) {
-                return mid
+                return mid+1
             } else if (arr[mid][0] < value) {
                 low = mid + 1;
             } else {
@@ -79,7 +83,7 @@ class WeightedRandom {
     }
 
     sample() {
-        let random = Math.ceil(Math.random() * this.total_weight_sum)
+        let random = Math.random() * this.total_weight_sum
         const index = this.binary_search(this.cumulative_weight_sum, random)
         return this.cumulative_weight_sum[index][1]
     }
@@ -91,8 +95,8 @@ function getRandomKey(collection) {
 }
 
 function generate(n) {
-    console.log(getRandomKey(stats))
-    let random_beginning=getRandomKey(stats)
+    const random_beginning=getRandomKey(stats)
+    console.log(random_beginning)
     let sentence = random_beginning
     let prev_word = random_beginning
     console.log(stats.get(prev_word))
