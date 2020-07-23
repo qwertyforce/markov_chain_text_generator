@@ -47,7 +47,7 @@ function learn(data,N) {
         previous_word=current_word
         // console.log(stats)
     }
-    console.log(`Words: ${stats.size}`)
+    console.log(`Sequences: ${stats.size}`)
 }
 
 
